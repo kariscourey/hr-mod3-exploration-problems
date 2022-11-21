@@ -1,0 +1,40 @@
+volumes:
+  psql-volume:
+    external: true
+services:
+  api:
+    build:
+      context: api
+      dockerfile: Dockerfile.dev
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./api:/app
+    environment:
+      PGHOST: postgres
+      PGDATABASE: trivia-game
+      PGUSER: trivia-game
+      PGPASSWORD: trivia-game
+  postgres:
+    build:
+      context: data
+      dockerfile: Dockerfile.dev
+    volumes:
+      - psql-volume:/var/lib/postgresql/data
+    environment:
+      POSTGRES_PASSWORD: trivia-game
+      POSTGRES_USER: trivia-game
+      POSTGRES_DB: trivia-game
+  ghi:
+    image: node:lts-bullseye
+    command: /bin/bash run.sh
+    working_dir: /app
+    volumes:
+      - ./ghi:/app
+    ports:
+      - "3000:3000"
+    environment:
+      HOST_OS: ${OS}
+      NODE_ENV: development
+      HOST: "0.0.0.0"
+      REACT_APP_API_HOST: http://localhost:8000
